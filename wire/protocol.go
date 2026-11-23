@@ -188,6 +188,9 @@ const (
 	// TestNet4 represents the test network (version 4).
 	TestNet4 BitcoinNet = 0x283f161c
 
+	// TestNet5 represents the test network (version 5).
+	TestNet5 BitcoinNet = 0x45564946
+
 	// SigNet represents the public default SigNet. For custom signets,
 	// see CustomSignetParams.
 	SigNet BitcoinNet = 0x40CF030A
@@ -203,6 +206,7 @@ var bnStrings = map[BitcoinNet]string{
 	TestNet:  "TestNet",
 	TestNet3: "TestNet3",
 	TestNet4: "TestNet4",
+	TestNet5: "TestNet5",
 	SigNet:   "SigNet",
 	SimNet:   "SimNet",
 }
