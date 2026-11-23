@@ -74,6 +74,11 @@ func TestRegister(t *testing.T) {
 					err:    ErrDuplicateNet,
 				},
 				{
+					name:   "duplicate testnet5",
+					params: &TestNet5Params,
+					err:    ErrDuplicateNet,
+				},
+				{
 					name:   "duplicate simnet",
 					params: &SimNetParams,
 					err:    ErrDuplicateNet,
@@ -361,6 +366,11 @@ func TestRegister(t *testing.T) {
 				{
 					name:   "duplicate testnet4",
 					params: &TestNet4Params,
+					err:    ErrDuplicateNet,
+				},
+				{
+					name:   "duplicate testnet5",
+					params: &TestNet5Params,
 					err:    ErrDuplicateNet,
 				},
 				{

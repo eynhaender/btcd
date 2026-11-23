@@ -37,6 +37,11 @@ var (
 	// 2^224 - 1.
 	testNet3PowLimit = new(big.Int).Sub(new(big.Int).Lsh(bigOne, 224), bigOne)
 
+	// testNet5PowLimit is the highest proof of work value a Bitcoin block
+	// can have for the test network (version 5).  It is the value
+	// 0x0fffff * 2^184.
+	testNet5PowLimit = new(big.Int).Lsh(big.NewInt(0x0fffff), 184)
+
 	// simNetPowLimit is the highest proof of work value a Bitcoin block
 	// can have for the simulation test network.  It is the value 2^255 - 1.
 	simNetPowLimit = new(big.Int).Sub(new(big.Int).Lsh(bigOne, 255), bigOne)
@@ -859,6 +864,129 @@ var TestNet4Params = Params{
 	HDCoinType: 1,
 }
 
+// TestNet5Params defines the network parameters for the test Bitcoin network
+// (version 5).
+var TestNet5Params = Params{
+	Name:        "testnet5",
+	Net:         wire.TestNet5,
+	DefaultPort: "18353",
+	DNSSeeds: []DNSSeed{
+		{"seed.testnet5.achownodes.xyz", true},
+	},
+
+	// Chain parameters
+	GenesisBlock:             &testNet5GenesisBlock,
+	GenesisHash:              &testNet5GenesisHash,
+	PowLimit:                 testNet5PowLimit,
+	PowLimitBits:             0x1a0fffff,
+	BIP0034Height:            1,
+	BIP0065Height:            1,
+	BIP0066Height:            1,
+	CoinbaseMaturity:         100,
+	SubsidyReductionInterval: 210000,
+	TargetTimespan:           time.Hour * 24 * 14, // 14 days
+	TargetTimePerBlock:       time.Minute * 10,    // 10 minutes
+	RetargetAdjustmentFactor: 4,                   // 25% less, 400% more
+	ReduceMinDifficulty:      false,
+	MinDiffReductionTime:     0,
+	GenerateSupported:        false,
+
+	// Checkpoints ordered from oldest to newest.
+	Checkpoints: []Checkpoint{},
+
+	// Consensus rule change deployments.
+	//
+	// The miner confirmation window is defined as:
+	//   target proof of work timespan / target proof of work spacing
+	RuleChangeActivationThreshold: 1512, // 75% of MinerConfirmationWindow
+	MinerConfirmationWindow:       2016,
+	Deployments: [DefinedDeployments]ConsensusDeployment{
+		DeploymentTestDummy: {
+			BitNumber: 28,
+			DeploymentStarter: NewMedianTimeDeploymentStarter(
+				time.Unix(1199145601, 0), // January 1, 2008 UTC
+			),
+			DeploymentEnder: NewMedianTimeDeploymentEnder(
+				time.Unix(1230767999, 0), // December 31, 2008 UTC
+			),
+		},
+		DeploymentTestDummyMinActivation: {
+			BitNumber:                 22,
+			CustomActivationThreshold: 1815,    // Only needs 90% hash rate.
+			MinActivationHeight:       10_0000, // Can only activate after height 10k.
+			DeploymentStarter: NewMedianTimeDeploymentStarter(
+				time.Time{}, // Always available for vote
+			),
+			DeploymentEnder: NewMedianTimeDeploymentEnder(
+				time.Time{}, // Never expires
+			),
+		},
+		DeploymentTestDummyAlwaysActive: {
+			BitNumber: 30,
+			DeploymentStarter: NewMedianTimeDeploymentStarter(
+				time.Time{}, // Always available for vote
+			),
+			DeploymentEnder: NewMedianTimeDeploymentEnder(
+				time.Time{}, // Never expires
+			),
+			AlwaysActiveHeight: 1,
+		},
+		DeploymentCSV: {
+			BitNumber: 31,
+			DeploymentStarter: NewMedianTimeDeploymentStarter(
+				time.Time{}, // Always available for vote
+			),
+			DeploymentEnder: NewMedianTimeDeploymentEnder(
+				time.Time{}, // Never expires
+			),
+			AlwaysActiveHeight: 1,
+		},
+		DeploymentSegwit: {
+			BitNumber: 29,
+			DeploymentStarter: NewMedianTimeDeploymentStarter(
+				time.Time{}, // Always available for vote
+			),
+			DeploymentEnder: NewMedianTimeDeploymentEnder(
+				time.Time{}, // Never expires
+			),
+			AlwaysActiveHeight: 1,
+		},
+		DeploymentTaproot: {
+			BitNumber: 2,
+			DeploymentStarter: NewMedianTimeDeploymentStarter(
+				time.Time{}, // Always available for vote
+			),
+			DeploymentEnder: NewMedianTimeDeploymentEnder(
+				time.Time{}, // Never expires
+			),
+			MinActivationHeight: 0,
+			AlwaysActiveHeight:  1,
+		},
+	},
+
+	// Mempool parameters
+	RelayNonStdTxs: true,
+
+	// Human-readable part for Bech32 encoded segwit addresses, as defined in
+	// BIP 173.
+	Bech32HRPSegwit: "tb", // always tb for test net
+
+	// Address encoding magics
+	PubKeyHashAddrID:        0x6f, // starts with m or n
+	ScriptHashAddrID:        0xc4, // starts with 2
+	WitnessPubKeyHashAddrID: 0x03, // starts with QW
+	WitnessScriptHashAddrID: 0x28, // starts with T7n
+	PrivateKeyID:            0xef, // starts with 9 (uncompressed) or c (compressed)
+
+	// BIP32 hierarchical deterministic extended key magics
+	HDPrivateKeyID: [4]byte{0x04, 0x35, 0x83, 0x94}, // starts with tprv
+	HDPublicKeyID:  [4]byte{0x04, 0x35, 0x87, 0xcf}, // starts with tpub
+
+	// BIP44 coin type used in the hierarchical deterministic path for
+	// address generation.
+	HDCoinType: 1,
+}
+
 // SimNetParams defines the network parameters for the simulation test Bitcoin
 // network.  This network is similar to the normal test network except it is
 // intended for private use within a group of individuals doing simulation
@@ -1282,6 +1410,7 @@ func init() {
 	mustRegister(&MainNetParams)
 	mustRegister(&TestNet3Params)
 	mustRegister(&TestNet4Params)
+	mustRegister(&TestNet5Params)
 	mustRegister(&RegressionNetParams)
 	mustRegister(&SimNetParams)
 }
